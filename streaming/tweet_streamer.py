@@ -8,6 +8,8 @@ from getpass import getpass
 from datetime import datetime
 from six.moves import configparser
 from kafka import KafkaProducer
+import pdb
+# from sets import Set
 
 class TweetStreamListener(tweepy.StreamListener):
 
@@ -18,21 +20,31 @@ class TweetStreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
         try:
-            coords = status.coordinates["coordinates"]
-            if coords is not None:
-                local_created_time = status.created_at - self.TIMEZONE_OFFSET;
-                tweet = {
-                    'name': status.author.screen_name,
-                    'time': local_created_time.strftime("%Y/%m/%d %H:%M:%S"),
-                    'location': {'lat': coords[1], 'lon': coords[0]},
-                    'text': status.text,
-                    'profile_image_url': status.author.profile_image_url,
-                    'sentiment': ''
-                }
-#                print ("sending tweets to kafka")
-                print(tweet);
-                self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
-                return True
+            # coords = status.coordinates["coordinates"]
+            local_created_time = status.created_at - self.TIMEZONE_OFFSET;
+            tweet = {
+                'name': status.author.screen_name,
+                'time': local_created_time.strftime("%Y/%m/%d %H:%M:%S"),
+                # 'location': {'lat': coords[1], 'lon': coords[0]},
+                'text': status.text,
+                'profile_image_url': status.author.profile_image_url,
+                'sentiment': ''
+            }
+            press = set(['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
+                            'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
+                            'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
+                            'EconBizFin','ETFinance','StockTwist','DeutscheBank', 'Xiaovid'])
+            if tweet['name'] in press:
+                # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
+                print('get')
+                print(tweet)
+#               print ("sending tweets to kafka")
+            # # print(tweet);
+            # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
+            # print(tweet['name'])
+            # print(tweet)
+            
+            return True
 
         except:
             # Catch any unicode errors while printing to console
@@ -55,7 +67,13 @@ def start_stream(kafka_producer, config_filename):
 
     global stream
     stream = tweepy.Stream(auth, TweetStreamListener(kafka_producer), timeout=None)
-    stream.filter(locations=[-180, -90, 180, 90], languages=['en'])
+    # stream.filter(languages=['en'])
+    # stream.sample()
+    stream.filter(track=['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
+                            'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
+                            'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
+                            'EconBizFin','ETFinance','StockTwist','DeutscheBank', 'Xiaovid'], languages=['en'])
+    # stream.filter(locations=[-180, -90, 180, 90], languages=['en'])
 
 def stop_stream():
     print ('stopping stream...')
