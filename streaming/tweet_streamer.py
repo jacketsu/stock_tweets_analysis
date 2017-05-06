@@ -30,7 +30,8 @@ class TweetStreamListener(tweepy.StreamListener):
                     'sentiment': ''
                 }
 #                print ("sending tweets to kafka")
-                self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
+                print(tweet);
+                # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
                 return True
 
         except:
@@ -54,7 +55,7 @@ def start_stream(kafka_producer, config_filename):
 
     global stream
     stream = tweepy.Stream(auth, TweetStreamListener(kafka_producer), timeout=None)
-    stream.filter(locations=[-180, -90, 180, 90], languages=['en'])
+    stream.filter(locations=[-180, -90, 180, 90], languages=['en'], name=['Tom'])
 
 def stop_stream():
     print ('stopping stream...')
