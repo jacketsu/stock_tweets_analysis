@@ -30,16 +30,16 @@ class TweetStreamListener(tweepy.StreamListener):
                 'profile_image_url': status.author.profile_image_url,
                 'sentiment': ''
             }
-            press = set(['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
-                            'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
-                            'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
-                            'EconBizFin','ETFinance','StockTwist','DeutscheBank', 'Xiaovid'])
-            if tweet['name'] in press:
-                # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
-                print('get')
-                print(tweet)
+            # press = set(['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
+            #                 'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
+            #                 'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
+            #                 'EconBizFin','ETFinance','StockTwist','DeutscheBank', 'Xiaovid'])
+            # if tweet['name'] in press:
+            #     # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
+            #     print('get')
+            #     print(tweet)
 #               print ("sending tweets to kafka")
-            # # print(tweet);
+            print(tweet);
             # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
             # print(tweet['name'])
             # print(tweet)
@@ -67,12 +67,12 @@ def start_stream(kafka_producer, config_filename):
 
     global stream
     stream = tweepy.Stream(auth, TweetStreamListener(kafka_producer), timeout=None)
-    # stream.filter(languages=['en'])
+    stream.filter(languages=['en'])
     # stream.sample()
-    stream.filter(track=['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
-                            'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
-                            'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
-                            'EconBizFin','ETFinance','StockTwist','DeutscheBank', 'Xiaovid'], languages=['en'])
+    # stream.filter(track=['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
+    #                         'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
+    #                         'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
+    #                         'EconBizFin','ETFinance','StockTwist','DeutscheBank', 'Xiaovid'], languages=['en'])
     # stream.filter(locations=[-180, -90, 180, 90], languages=['en'])
 
 def stop_stream():
