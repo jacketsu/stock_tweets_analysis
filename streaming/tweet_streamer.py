@@ -8,7 +8,6 @@ from getpass import getpass
 from datetime import datetime
 from six.moves import configparser
 from kafka import KafkaProducer
-import pdb
 # from sets import Set
 
 class TweetStreamListener(tweepy.StreamListener):
@@ -39,10 +38,10 @@ class TweetStreamListener(tweepy.StreamListener):
             #     print('get')
             #     print(tweet)
 #               print ("sending tweets to kafka")
-            print(tweet);
-            # self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
+            # print(tweet);
+            self.kafka_producer.send('tweets', json.dumps(tweet).encode('utf-8'))
             # print(tweet['name'])
-            # print(tweet)
+            print(tweet)
             
             return True
 
@@ -67,8 +66,10 @@ def start_stream(kafka_producer, config_filename):
 
     global stream
     stream = tweepy.Stream(auth, TweetStreamListener(kafka_producer), timeout=None)
-    stream.filter(languages=['en'])
+    # stream.filter(languages=['en'])
     # stream.sample()
+    stream.filter(track=['Google','Facebook','Apple','Amazon','Linked','Microsoft','Bloomberg',
+                            'Tweet','Tesla'], languages=['en'])
     # stream.filter(track=['YahooFinance','WSJ','TheEconomist','Forbes','business','MarketWatch','WSJpersfinance',
     #                         'ftfinancenews','WSJbusiness','NYIFinance','NYCCFB','FinancialTimes',
     #                         'clusterstock','wiley_finance','FortuneMagazine','ftmoney','TradeFinance','NYCFinance','FT',
