@@ -198,7 +198,7 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif}
               position:relative;
               top:1px;
             }
-        </style>
+--        </style>
 
 	</head>
 	<body>
@@ -207,7 +207,6 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif}
 
 <div class="styled-select slate">
   <select id="searchList">
-    <option></option>
     <option>AAPL</option>
     <option>AMZN</option>
     <option>FB</option>
@@ -316,8 +315,8 @@ function searchSelected() {
 
 var token = getUrlParam('search');
 if (token == null || token == "")
-  token = "APPL";
-document.getElementById("title").innerHTML = "<p>Stock-tweet Visualization</p>" + token;
+  token = "AAPL";
+document.getElementById("title").innerHTML = "Get information from: " + token;
 (function() {
 
   var margin = {top: 30, right: 20, bottom: 100, left: 50},
@@ -669,9 +668,9 @@ d3.json('https://s3.amazonaws.com/cs5223/final/'+token+'_tweet.json', function(e
     .attr('height', 10)
     .attr('transform', 'translate(10, 10)');
 
-  // legend1.append('text')
-  //   .attr('class', 'fa fa-asterisk fa-fw w3-margin-right w3-text-teal')
-  //   .text(function(d) { return "Total Tweets: " + (pos+neg+neu)});
+  legend1.append('text')
+    .attr('class', 'fa fa-asterisk fa-fw w3-margin-right w3-text-teal')
+    .text(function(d) { return "Total Tweets: " + (pos+neg+neu)});
 });
     </script>
     </body>
