@@ -1,48 +1,55 @@
 from googlefinance import getQuotes
-from kafka import KafkaProducer
-from kafka.errors import KafkaError
 import argparse
 import logging
 import json
+import requests
 import time
-import schedule
-import atexit
-logging.basicConfig()
-logger = logging.getLogger('data-producer')
-logger.setLevel(logging.DEBUG)
-symbol = 'AAPL'
-kafka_broker = '127.0.0.1:9092'
-topic = 'bigdata'
+from datetime import datetime
+from worker import ElasticsearchStock
 
-def fetch_price(producer, symbol):
-    logger.debug('start to fetch price for %s' % symbol)
-    price = json.dumps(getQuotes(symbol))
-    producer.send(topic=topic, value=price, timestamp_ms=time.time())
-    logger.debug('sent stock price for %s, price is %s' % (symbol, price))
+id = 1
+end_point = 'search-stock-aqj3tyurz5jx3mut3ot4ll7h3a.us-west-2.es.amazonaws.com'
+index = 'stock'
+mapping_type = 'price'  
+address = 'http://%s/%s/%s' % (end_point, index, mapping_type)
+upload_address = '%s/_bulk' % (address)
 
-def shut_down(producer):
-    logger.debug('exiting program')
-    producer.flush(10)
-    producer.close()
-    logger.debug('kafka producer closed, exiting')    
+def upload(stock_list):
+    global id
+        
+    data = ''
+    for stock in stock_list:
+        data += '{"index": {"_id": "%s"}}\n' % id
+        data += json.dumps(stock) + '\n'
+        id += 1
+
+    print (data)
+
+#    response = requests.put(upload_address, data=data)
+#    print(response)
+
+def fetch_stocks(symbols):
+    stock_list = getQuotes(symbols)
+    for data in stock_list:
+        print (data)
+    return stock_list
+
+def save_json(es, searchkey):
+    response = es.search_stock(searchkey)
+    stock_json = response['hits']['hits']
+    print (stock_json)
+
+    with open('%s.json' % searchkey, 'w') as f:
+        json.dump(stock_json, f)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('symbol', help = 'the stock symbol, such as AAPL')
-    parser.add_argument('kafka_broker', help = 'the location of kafka broker')
-    parser.add_argument('topic', help = 'the kafka topic to write to')
-    args = parser.parse_args()
-    symbol = args.symbol
-    topic = args.topic
-    kafka_broker = args.kafka_broker
-    producer = KafkaProducer(
-            bootstrap_servers=kafka_broker
-        )
-    
-    schedule.every(30).second.do(fetch_price, producer, symbol)
-    atexit.register(shut_down, producer)
-    while True:
+    symbols = ['AAPL', 'GOOGL', 'FB', 'AMZN', 'LNKD', 'MSFT', 'TSLA']
+    while False:
+        stocks = fetch_stocks(symbols)
+        upload(stocks)
+        time.sleep(5)
 
-        schedule.run_pending()
+    est = ElasticsearchStock()
+    save_json(est, 'AAPL')
 
-        time.sleep(1)
+

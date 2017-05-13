@@ -7,8 +7,7 @@ index = 'stock'
 mapping_type = 'price'  
 address = 'http://%s/%s/%s' % (end_point, index, mapping_type)
 
-
-class ElasticsearchWrapper:
+class ElasticsearchStock:
     
     def create_index(self):
         data = {
@@ -39,7 +38,7 @@ class ElasticsearchWrapper:
         response = requests.post(address, data1)
         print ('upload success')
 
-    def search(self,keyword):
+    def search_stock(self, keyword):
          data = {
              "size": 2000,
 
@@ -58,18 +57,16 @@ class ElasticsearchWrapper:
     def printa(self,searchkey):
         resultjson=self.search(searchkey)
         output= json.dumps(resultjson)
-        print output
+        print (output)
         modefied_json=resultjson['hits']['hits']
 
         with open('%s.json'%searchkey, 'w') as f:
             json.dump(modefied_json, f)
 
 
-
-
 if __name__ == '__main__':
 
-    es = ElasticsearchWrapper()
+    es = ElasticsearchStock()
     
     es.printa('AAPL')
     es.printa('GOOGL')
@@ -78,9 +75,3 @@ if __name__ == '__main__':
     es.printa('LNKD')
     es.printa('MSFT')
     es.printa('TSLA')
-
-    
-
-
-
-
