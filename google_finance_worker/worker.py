@@ -1,5 +1,3 @@
-#in charge of sending josn to es
-#!/usr/bin/env python
 import json, requests
 
 from six.moves import configparser
@@ -32,17 +30,14 @@ class ElasticsearchWrapper:
                 }
             }
         }
-        #print (data)
+
         response = requests.post(address, data=json.dumps(data))
         return response.text
 
     def upload(data1):
         print ('uploading to databse...')
-        #upload_address = '%s/_bulk' % (self.address)
-        #response = requests.put(upload_address, data=data)
         response = requests.post(address, data1)
         print ('upload success')
-        # return response
 
     def search(self,keyword):
          data = {
@@ -65,7 +60,6 @@ class ElasticsearchWrapper:
         output= json.dumps(resultjson)
         print output
         modefied_json=resultjson['hits']['hits']
-        #print json.dumps(modefied_json)
 
         with open('%s.json'%searchkey, 'w') as f:
             json.dump(modefied_json, f)
@@ -73,24 +67,9 @@ class ElasticsearchWrapper:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
 
     es = ElasticsearchWrapper()
-    # res = es.create_index()
-    #print res
     
     es.printa('AAPL')
     es.printa('GOOGL')
@@ -100,8 +79,6 @@ if __name__ == '__main__':
     es.printa('MSFT')
     es.printa('TSLA')
 
-
-    # print es.printa('AAPL')
     
 
 

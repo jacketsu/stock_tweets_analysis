@@ -40,62 +40,7 @@ class ElasticsearchWrapper:
         upload_address = '%s/_bulk' % (self.address)
         response = requests.put(upload_address, data=data)
         print ('upload success')
-        # return response
-
-    # def search(self, keyword):
-    #     data = {
-    #         "size": 2000,
-    #         "query": {
-    #             "query_string": { "query": keyword }
-    #         }
-    #     }
-    #     search_address = '%s/_search' % (self.address)
-    #     response = requests.post(search_address, data=json.dumps(data))
-
-    #     return response.json()
-
-    # def geosearch(self, location, distance, size):
-    #     data = {
-    #         "size": size,
-    #         "query": {
-    #             "bool": {
-    #                 "must": {
-    #                     "match_all": {}
-    #                 },
-    #                 "filter": {
-    #                     "geo_distance": {
-    #                         "distance": '%skm' % (distance),
-    #                         "location": location
-    #                     }
-    #                 }
-    #             }
-    #         }
-    #     }
-    #     print(location)
-    #     search_address = '%s/_search' % (self.address)
-    #     print(search_address)
-    #     response = requests.post(search_address, data=json.dumps(data))
-    #     return response.json()
         
-    # def fetch_latest(self, top_n):
-    #     data = {
-    #         "query": {
-    #             "match_all": {}
-    #         },
-    #         "size": top_n,
-    #         "sort": [
-    #             {
-    #                 "time": {
-    #                     "order": "desc"
-    #                 }
-    #             }
-    #         ]
-    #     }
-    #     search_address = '%s/_search' % (self.address)
-    #     response = requests.post(search_address, data=json.dumps(data))
-    #     return response.json()
-
-
 es = ElasticsearchWrapper()
 res = es.create_index()
 print res

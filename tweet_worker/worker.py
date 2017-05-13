@@ -17,27 +17,6 @@ end_point = 'search-jacketsu-4pm2nv7dseksmqm2v4edzc2xxe.us-east-1.es.amazonaws.c
 index = 'twitter'
 mapping_type = 'tweet'  
 address = 'http://%s/%s/%s' % (end_point, index, mapping_type)
-# data = {
-#             "settings": {
-#                 "number_of_shards": 2,
-#                 "number_of_replicas": 1
-#             },
-#             "mappings": {
-#                 mapping_type: {
-#                     "properties": {
-#                         "name": { "type" : "text" },
-#                         "time": { "type": "date", "format": "yyyy/MM/dd HH:mm:ss"},
-#                         "location": { "type": "geo_point"},
-#                         "text": { "type": "text"},
-#                         "profile_image_url": { "type": "text" },
-#                         "sentiment": { "type": "text" }
-#                     }
-#                 }
-#             }
-#         }
-# print (data)
-# response = requests.put(address, data=json.dumps(data))
-
 
 def worker():
 
@@ -68,7 +47,6 @@ def worker():
             global id
             msg["sentiment"] = emotion
 
-            # print ('uploading to databse...')
             upload_address = '%s/_bulk' % (address)
             data = ''
             data += '{"index": {"_id": "%s"}}\n' % id
@@ -76,8 +54,6 @@ def worker():
             id += 1
             response = requests.put(upload_address, data=data)
             print(data)
-            # print ('upload success')
-
 
 for i in range(worker_num):
     thread = threading.Thread(target=worker, name="worker")
