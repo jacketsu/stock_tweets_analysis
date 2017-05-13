@@ -11,13 +11,18 @@ Stock market is changing all the time and investors may be looking for relevant 
 #### AWS
 * AWS Elastic Beanstalk: web backend/frontend.
 * AWS Elasticsearch: 
-      * `stocks 
-      * `tweets
+     * stocks 
+     * tweets
 * AWS EC2: 
-      * `tweets streaming server
-      * `sentiment analysis worker
-      * `Kafka (and zookeeper)
+     * tweets streaming server
+     * sentiment analysis worker
+     * Kafka (and zookeeper)
 * AWS S3: Store historical stocks and tweets data.
 
 ## Architecture Diagram
 ![](Diagram.png)
+
+## How to Run
+```
+python manage.py runserver
+```
