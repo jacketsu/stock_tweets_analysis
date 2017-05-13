@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Stock-Twitter</title>
+    <!--<link rel=stylesheet href="style.css" type="text/css" media=screen>-->
+    <script src='http://d3js.org/d3.v3.min.js' charset="utf-8"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js' charset="utf-8"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif}
+</style>
+    <style>
+            .chart__grid {
+            stroke: #e7eef4;
+            opacity: 0.3;
+            }
+            svg {
+              font: 10px sans-serif;
+            }
+            .area {
+              fill: rgba(255,100,100,0.5);
+              clip-path: url("#clip");
+            }
+            .axis path,
+            .axis line {
+              fill: none;
+              stroke: #e7eef4;
+              shape-rendering: crispEdges;
+            }
+            .brush .extent {
+              stroke: #fff;
+              fill-opacity: 0.125;
+              shape-rendering: crispEdges;
+            }
+            /*New*/
+            .chart text {
+              fill: #7f8faf;
+            }
+            .chart__line {
+              fill: none;
+              stroke-width: 1.2px;
+              clip-path: url("#clip");
+            }
+            .chart__price--focus {
+              stroke-width: 2px;
+              stroke: #2980b9;
+            }
+            .chart__average--focus {
+              stroke-width: 2px;
+              stroke: #f00;
+              opacity: 0.3;
+            }
+            .chart__overlay {
+              opacity: 0;
+              pointer-events: all;
+            }
+            .chart__tooltip--price {
+              fill: none;
+              stroke: #f00;
+            }
+            .chart__tooltip--average {
+              fill: none;
+              stroke: #f00;
+            }
+            .chart__bars {
+              fill: #99c5df;
+              opacity: 1;
+            }
+            .chart__range-selection text {
+              cursor: pointer;
+              text-decoration: underline;
+              fill: #2980b9;
+            }
+            .chart__axis--context text {
+              fill: #7f8faf;
+            }
+            .chart__axis--context .tick:nth-child(odd) {
+              display: none;
+            }
+            .chart__axis--context path,
+            .chart__axis--context line {
+              display: none;
+            }
+            .chart__area {
+              fill: #e6f6fe;
+              stroke: #3587bc;
+            }
+            .extent {
+              fill: #e2f0ff;
+              fill: #3587bc;
+              fill-opacity: 0.3;
+            }
+            .y.axis .tick text {
+              text-anchor: start !important;
+              fill: #7f8faf;
+            }
+            .y.axis .tick line {
+              display: none;
+            }
+            .y.axis path {
+              display: none;
+            }
+
+            #streamList {
+                list-style: none;
+                padding: 10;
+                float:left;
+                width:600;
+                height: 760px;
+                overflow-y: scroll;
+                overflow: auto;
+            }
+            #stream {
+                
+                overflow-y: scroll;
+                overflow: auto;
+            }
+            .message {
+                margin-bottom:0px;
+                margin-top:0px;
+                margin-left: 3px;
+                font-weight: 200;
+                font-size: 12;
+                color: black;
+            }
+            .time {
+                margin-bottom:0px;
+                margin-top:0px;
+                margin-left: 10px;
+                font-weight: 150;
+                font-size: 12;
+                color: #C0C1C2;
+            }
+            .stmt {
+                margin-bottom:6px;
+                margin-top:-1px;
+                margin-left: 1px;
+                font-weight: 300;
+                font-size: 14;               
+            }
+            .arc text {
+                font: 10px sans-serif;
+                text-anchor: middle;
+            }
+
+            .arc path {
+                stroke: #fff;
+            }
+            .styled-select select {
+               background: transparent;
+               font-size: 23px;
+               height: 60px;
+               padding: 5px; /* If you add too much padding here, the options won't show in IE */
+               margin-left: 10%;
+               width: 80%;
+            }
+            .myButton {
+
+              -moz-box-shadow: 0px 10px 14px -7px #276873;
+              -webkit-box-shadow: 0px 10px 14px -7px #276873;
+              box-shadow: 0px 10px 14px -7px #276873;
+              background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #599bb3), color-stop(1, #408c99));
+              background:-moz-linear-gradient(top, #599bb3 5%, #408c99 100%);
+              background:-webkit-linear-gradient(top, #599bb3 5%, #408c99 100%);
+              background:-o-linear-gradient(top, #599bb3 5%, #408c99 100%);
+              background:-ms-linear-gradient(top, #599bb3 5%, #408c99 100%);
+              background:linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+              filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#599bb3', endColorstr='#408c99',GradientType=0);
+              background-color:#599bb3;
+              -moz-border-radius:8px;
+              -webkit-border-radius:8px;
+              border-radius:8px;
+              display:inline-block;
+              cursor:pointer;
+              color:#ffffff;
+              font-family:Arial;
+              font-size:20px;
+              font-weight:bold;
+              padding:13px 32px;
+              text-decoration:none;
+              text-shadow:0px 1px 0px #3d768a;
+            }
+            .myButton:hover {
+              background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #408c99), color-stop(1, #599bb3));
+              background:-moz-linear-gradient(top, #408c99 5%, #599bb3 100%);
+              background:-webkit-linear-gradient(top, #408c99 5%, #599bb3 100%);
+              background:-o-linear-gradient(top, #408c99 5%, #599bb3 100%);
+              background:-ms-linear-gradient(top, #408c99 5%, #599bb3 100%);
+              background:linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
+              filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#408c99', endColorstr='#599bb3',GradientType=0);
+              background-color:#408c99;
+            }
+            .myButton:active {
+              position:relative;
+              top:1px;
+            }
+        </style>
+
+	</head>
+	<body>
+<!-- selection box -->
+<h1 id="title" align="center">Get information from:</h1>
+
+<div class="styled-select slate">
+  <select id="searchList">
+    <option>AAPL</option>
+    <option>AMZN</option>
+    <option>FB</option>
+    <option>MSFT</option>
+    <option>GOOGL</option>
+    <option>TSLA</option>
+  </select>
+<a class="myButton" onclick="searchSelected();">Search</a>
+</div>
+<div align="right">
+
+
+</div>
+
+
+		<!-- Page Container -->
+<div class="w3-content w3-margin-top" style="max-width:1400px;">
+
+  <!-- The Grid -->
+  <div class="w3-row-padding">
+  
+    <!-- Left Column -->
+    <div class="w3-third">
+    
+      <div class="w3-white w3-text-grey w3-card-4">
+        
+        <div class="w3-container">
+          
+          
+
+          <p class="w3-large"><b><i class="fa fa-asterisk fa-fw w3-margin-right w3-text-teal"></i>Tweets Sentiment</b></p>
+          
+          <div id="stream">
+            <li id="streamList">
+            
+            <li>
+          </div>
+          
+
+          
+          <br>
+        </div>
+      </div><br>
+
+    <!-- End Left Column -->
+    </div>
+
+    <!-- Right Column -->
+    <div class="w3-twothird">
+    
+      <div class="w3-container w3-card-2 w3-white w3-margin-bottom">
+        <h2 class="w3-text-grey w3-padding-16"><i class="fa fa-asterisk fa-fw w3-margin-right w3-xxlarge w3-text-teal"></i>Stock Price Chart</h2>
+        
+        
+        <div class="w3-container">
+          <div id="container" ></div>
+          
+        </div>
+      </div>
+
+      <div class="w3-container w3-card-2 w3-white">
+        <h2 class="w3-text-grey w3-padding-16"><i class="fa fa-asterisk fa-fw w3-margin-right w3-xxlarge w3-text-teal"></i>Market Mood</h2>
+        <div class="w3-container">
+          <div id="donut" ></div>
+          
+        </div>
+      </div>
+
+    <!-- End Right Column -->
+    </div>
+    
+  <!-- End Grid -->
+  </div>
+  
+  <!-- End Page Container -->
+</div>
+
+<footer class="w3-container w3-teal w3-center w3-margin-top">
+  <p>Find me on social media.</p>
+  <i class="fa fa-facebook-official w3-hover-opacity"></i>
+  <i class="fa fa-instagram w3-hover-opacity"></i>
+  <i class="fa fa-snapchat w3-hover-opacity"></i>
+  <i class="fa fa-pinterest-p w3-hover-opacity"></i>
+  <i class="fa fa-twitter w3-hover-opacity"></i>
+  <i class="fa fa-linkedin w3-hover-opacity"></i>
+  <p>Powered by Jiawei Tang</p>
+</footer>
+<!--
+    <div id="container" ></div>
+    <div id="stream">
+            <li id="streamList">
+            
+            <li>
+        </div>
+        -->
+    <script>
+
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); 
+    var r = window.location.search.substr(1).match(reg);  
+    if (r != null) return unescape(r[2]); return null; 
+}
+
+function searchSelected() {
+  var e = document.getElementById("searchList");
+  var selected = e.options[e.selectedIndex].innerHTML;
+  window.location.href="?search="+selected;
+}
+
+
+
+
+
+var token = getUrlParam('search');
+if (token == null || token == "")
+  token = "AAPL";
+document.getElementById("title").innerHTML = "Get information from: " + token;
+(function() {
+
+  var margin = {top: 30, right: 20, bottom: 100, left: 50},
+    margin2  = {top: 210, right: 20, bottom: 20, left: 50},
+    width    = 764 - margin.left - margin.right,
+    height   = 333 - margin.top - margin.bottom,
+    height2  = 283 - margin2.top - margin2.bottom;
+
+  var parseDate = d3.time.format('%Y-%m-%dT%H:%M:%SZ').parse,
+    bisectDate = d3.bisector(function(d) { return d.date; }).left,
+    legendFormat = d3.time.format('%b %d, %Y');
+
+  var x = d3.time.scale().range([0, width]),
+    x2  = d3.time.scale().range([0, width]),
+    y   = d3.scale.linear().range([height, 10]),
+    y1  = d3.scale.linear().range([height, 0]),
+    y2  = d3.scale.linear().range([height2, 0]);
+    //y3  = d3.scale.linear().range([60, 0]);
+
+  var xAxis = d3.svg.axis().scale(x).orient('bottom'),
+    xAxis2  = d3.svg.axis().scale(x2).orient('bottom'),
+    yAxis   = d3.svg.axis().scale(y).orient('left');
+
+  var priceLine = d3.svg.line()
+    .interpolate('linear')
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.price); });
+/*
+  var avgLine = d3.svg.line()
+    .interpolate('monotone')
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.average); });
+*/
+  var area2 = d3.svg.area()
+    .interpolate('linear')
+    .x(function(d) { return x2(d.date); })
+    .y0(height2)
+    .y1(function(d) { return y2(d.price); });
+
+  var svg = d3.select('#container').append('svg')
+    .attr('class', 'chart')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom + 60);
+
+  svg.append('defs').append('clipPath')
+    .attr('id', 'clip')
+  .append('rect')
+    .attr('width', width)
+    .attr('height', height);
+
+  var make_y_axis = function () {
+    return d3.svg.axis()
+      .scale(y)
+      .orient('left')
+      .ticks(3);
+  };
+
+  var focus = svg.append('g')
+    .attr('class', 'focus')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+/*
+  var barsGroup = svg.append('g')
+    .attr('class', 'volume')
+    .attr('clip-path', 'url(#clip)')
+    .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')');
+*/
+  var context = svg.append('g')
+    .attr('class', 'context')
+    .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + 60) + ')');
+
+  var legend = svg.append('g')
+    .attr('class', 'chart__legend')
+    .attr('width', width)
+    .attr('height', 30)
+    .attr('transform', 'translate(' + margin2.left + ', 10)');
+
+  legend.append('text')
+    .attr('class', 'chart__symbol')
+    .text('NASDAQ: ' + token );
+
+  var rangeSelection =  legend
+    .append('g')
+    .attr('class', 'chart__range-selection')
+    .attr('transform', 'translate(110, 0)');
+
+
+  d3.json("https://s3.amazonaws.com/cs5223/final/"+token+".json", function(err, data) {
+
+    console.log(token);
+    console.log(data);
+    data.forEach(function (d) {
+        
+        d.date = parseDate(d._source.LastTradeDateTime);
+        //d.close = +d.close;
+        d.price = +d._source.LastTradePrice;
+});
+
+
+    var brush = d3.svg.brush()
+      .x(x2)
+      .on('brush', brushed);
+
+    var xRange = d3.extent(data.map(function(d) { return d.date; }));
+    console.log(xRange);
+
+    x.domain(xRange);
+    y.domain([d3.min(data.map(function(d) { return d.price; })), d3.max(data.map(function(d) { return d.price; }))]);
+    //y3.domain(d3.extent(data.map(function(d) { return d.price; })));
+    x2.domain(x.domain());
+    y2.domain(y.domain());
+
+    var min = d3.min(data.map(function(d) { return d.price; }));
+    var max = d3.max(data.map(function(d) { return d.price; }));
+
+    var range = legend.append('text')
+      .text(legendFormat(new Date(xRange[0])) + ' - ' + legendFormat(new Date(xRange[1])) 
+        + "    max:  " + min
+        + "    min:  " + max
+        + "    avg:  " + d3.format(".2f")(d3.mean(data.map(function(d) { return d.price; })))
+        )
+      .style('text-anchor', 'end')
+      .attr('transform', 'translate(' + width + ', 0)');
+
+    focus.append('g')
+        .attr('class', 'y chart__grid')
+        .call(make_y_axis()
+        .tickSize(-width, 0, 0)
+        .tickFormat(''));
+/*
+    var averageChart = focus.append('path')
+        .datum(data)
+        .attr('class', 'chart__line chart__average--focus line')
+        .attr('d', avgLine);
+*/
+    var priceChart = focus.append('path')
+        .datum(data)
+        .attr('class', 'chart__line chart__price--focus line')
+        .attr('d', priceLine);
+
+    focus.append('g')
+        .attr('class', 'x axis')
+        .attr('transform', 'translate(0 ,' + height + ')')
+        .call(xAxis);
+
+    focus.append('g')
+        .attr('class', 'y axis')
+        .attr('transform', 'translate(12, 0)')
+        .call(yAxis);
+/*
+    var focusGraph = barsGroup.selectAll('rect')
+        .data(data)
+      .enter().append('rect')
+        .attr('class', 'chart__bars')
+        .attr('x', function(d, i) { return x(d.date); })
+        .attr('y', function(d) { return 155 - y3(d.price); })
+        .attr('width', 1)
+        .attr('height', function(d) { return y3(d.price); });
+*/
+    var helper = focus.append('g')
+      .attr('class', 'chart__helper')
+      .style('text-anchor', 'end')
+      .attr('transform', 'translate(' + width + ', 0)');
+
+    var helperText = helper.append('text')
+
+    var priceTooltip = focus.append('g')
+      .attr('class', 'chart__tooltip--price')
+      .append('circle')
+      .style('display', 'none')
+      .attr('r', 2.5);
+
+    var tweetTooltip = focus.append('g')
+      .attr('class', 'chart__tooltip--price')
+      .append('circle')
+      .style('display', 'none')
+      .attr('r', 2.5);
+/*
+    var averageTooltip = focus.append('g')
+      .attr('class', 'chart__tooltip--average')
+      .append('circle')
+      .style('display', 'none')
+      .attr('r', 2.5);
+*/
+    var mouseArea = svg.append('g')
+      .attr('class', 'chart__mouse')
+      .append('rect')
+      .attr('class', 'chart__overlay')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+      .on('mouseover', function() {
+        //helper.style('display', null);
+        //priceTooltip.style('display', null);
+        //averageTooltip.style('display', null);
+      })
+      .on('mouseout', function() {
+        helper.style('display', 'none');
+        priceTooltip.style('display', 'none');
+        //averageTooltip.style('display', 'none');
+      })
+      //.on('mousemove', mousemove);
+
+    context.append('path')
+        .datum(data)
+        .attr('class', 'chart__area area')
+        .attr('d', area2);
+
+    context.append('g')
+        .attr('class', 'x axis chart__axis--context')
+        .attr('y', 0)
+        .attr('transform', 'translate(0,' + (height2 - 22) + ')')
+        .call(xAxis2);
+
+    context.append('g')
+        .attr('class', 'x brush')
+        .call(brush)
+      .selectAll('rect')
+        .attr('y', -6)
+        .attr('height', height2 + 7);
+
+    
+/*
+    function mousemove() {
+      //var d.date = parseDate(d._source.LastTradeDateTime);
+      var x0 = x.invert(d3.mouse(this)[0]);
+      var i = bisectDate(data, x0, 1);
+      var d0 = data[i - 1];
+      var d = data[i + 1];
+      //var d0 = x0 - d1.date > d0.date - x0 ? d1 : d0;
+      //helperText.text(legendFormat(new Date(d.date)) + ' - Price: ' + d.price + ' Avg: ' + d.average);
+      helperText.text(legendFormat(new Date(d0.date)) + ' - Price: ' + d0.price);
+      priceTooltip.attr('transform', 'translate(' + x(d0.date) + ',' + y(d0.price) + ')');
+      //averageTooltip.attr('transform', 'translate(' + x(d.date) + ',' + y(d.average) + ')');
+    }
+*/
+    function brushed() {
+      var ext = brush.extent();
+      if (!brush.empty()) {
+        x.domain(brush.empty() ? x2.domain() : brush.extent());
+        y.domain([
+          d3.min(data.map(function(d) { return (d.date >= ext[0] && d.date <= ext[1]) ? d.price : max; })),
+          d3.max(data.map(function(d) { return (d.date >= ext[0] && d.date <= ext[1]) ? d.price : min; }))
+        ]);
+        range.text(legendFormat(new Date(ext[0])) + ' - ' + legendFormat(new Date(ext[1])))
+        //focusGraph.attr('x', function(d, i) { return x(d.date); });
+
+        var days = Math.ceil((ext[1] - ext[0]) / (24 * 3600 * 1000))
+        //focusGraph.attr('width', (40 > days) ? (40 - days) * 5 / 6 : 5)
+      }
+
+      priceChart.attr('d', priceLine);
+      //averageChart.attr('d', avgLine);
+      focus.select('.x.axis').call(xAxis);
+      focus.select('.y.axis').call(yAxis);
+    }
+
+    var dateRange = ['5m', '30m', '1h', '6h', '1d']
+    for (var i = 0, l = dateRange.length; i < l; i ++) {
+      var v = dateRange[i];
+      rangeSelection
+        .append('text')
+        .attr('class', 'chart__range-selection')
+        .text(v)
+        .attr('transform', 'translate(' + (18 * i) + ', 0)')
+        .on('click', function(d) { focusOnRange(this.textContent); });
+    }
+
+    function focusOnRange(range) {
+      var today = new Date(data[0].date)
+      var ext = new Date(data[0].date)
+      console.log(today);
+      console.log(ext);
+      if (range === '1h')
+        ext.setHours(ext.getHours() - 1)
+
+      if (range === '1d')
+        ext.setDate(ext.getDate() - 1)
+
+      if (range === '5m')
+        ext.setMinutes(ext.getMinutes() - 5)
+
+      if (range === '6h')
+        ext.setHours(ext.getHours() - 6)
+
+//      if (range === '1m')
+//        ext.setMinutes(ext.getMinutes() - 1)
+
+      if (range === '30m')
+        ext.setMinutes(ext.getMinutes() - 30)
+
+      brush.extent([ext, today])
+      brushed()
+      context.select('g.x.brush').call(brush.extent([ext, today]))
+    }
+
+  })// end Data
+/*
+  function type(d) {
+    //
+    return {
+      date    : parseDate(d._source.LastTradeDateTime),
+      price   : +d._source.LastTradePrice,
+      //average : +d.Average,
+      //volume : +d.Volume,
+    }
+  }
+  */
+}());
+		
+        var list = d3.select("#streamList");
+        var symbol = "AAPL";
+        function renderList(data) {
+            //console.log(data);
+            
+            
+            list.selectAll("li")
+                .data(data)
+                .enter()
+                
+                .append("li")
+                .attr("class", "time")
+                .text(function(d) {return "Time: " + d._source.time})
+                
+                .append("li")
+                .attr("class", "message")
+                .text(function(d) {return  d._source.text})
+                
+                .append("li")
+                .text(function(d) {return "Sentiment: " + d._source.sentiment})
+                .attr("class", "stmt")
+                .style('color', function(d) {
+                    
+                    if(d._source.sentiment === 'negative') {
+                        return "#3399FF";
+                    } 
+                    if(d._source.sentiment === 'positive') {
+                        return "#FF6666";
+                    } 
+                    else {
+                        return "#C0C1C2";
+                    }
+                })
+                ;
+//                .append("li")
+//                .attr("class", "symbol")
+//                .html(function(d) {return "Symbol: " + getSymbol(d)});
+                
+                
+        }
+        
+//        function getSymbol(data) {
+//            var syb = d3.select('.symbol');
+//            syb.data(data).enter().append()
+//                .html(function(d) {d.symbol + "&nbsp&nbsp"});
+//            return syb;
+//        }
+        /*
+        function getSentiment(data) {
+            if(data.entities.sentiment == null) {
+                return "null";
+            } else {
+                return data.entities.sentiment.basic;
+            }
+        }
+        */
+/*
+        function render(data) {
+            var resultFiltered = data.filter(function(d) { 
+                return d._source.time > ext[0] && d._source.time < ext[1];
+            });
+            renderList(resultFiltered);
+            
+        }
+        */
+        d3.json('https://s3.amazonaws.com/cs5223/final/'+token+'_tweet.json', function(error, result){
+            //console.log(result[symbol]);
+            //renderList(result[symbol]);
+            
+            console.log(result);
+            renderList(result);
+        });
+
+     /* var width = 960,
+    height = 500,
+    radius = Math.min(width, height) / 2;
+
+var color = d3.scale.ordinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888"]);
+
+var arc = d3.svg.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(radius - 70);
+
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.data.label; });
+
+var svg = d3.select("#donut").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");*/
+
+//d3.csv("data.csv", type, function(error, data) {
+ // if (error) throw error;
+ 
+d3.json('https://s3.amazonaws.com/cs5223/final/'+token+'_tweet.json', function(error, data){
+  console.log(data);
+  var pos=0;
+  var neg=0;
+  var neu=0;
+  data.forEach(function (d) {
+    if (d._source.sentiment == "neutral") {
+      neu ++;
+    }
+    else if (d._source.sentiment == "positive") {
+      pos ++;
+    }
+    else {
+      neg ++;
+    }
+  });
+
+  /*console.log(pos);
+  console.log(neg);
+  console.log(neu);*/
+
+  var dataset = [
+    { label: 'Positive', count: pos },
+    { label: 'Negative', count: neg },
+    { label: 'Neutral', count: neu }
+  ];
+
+  var width = 200;
+  var height = 200;
+  var radius = Math.min(width, height) / 2;
+  var color = d3.scale.ordinal().range(["#FF6666", "#3399FF", "#B4B2B2"]);
+  var svg = d3.select('#donut')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', 'translate(' + (width / 2) +
+      ',' + (height / 2) + ')');
+  var arc = d3.svg.arc()
+    .innerRadius(0)
+    .outerRadius(radius);
+  var label = d3.svg.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+  var pie = d3.layout.pie()
+    .value(function(d) { return d.count; })
+    .sort(null);
+  var path = svg.selectAll('path')
+    .data(pie(dataset))
+    .enter()
+    .append('path')
+    .attr('d', arc)
+    .attr('fill', function(d) {
+      return color(d.data.label);
+    });
+    var g = svg.selectAll(".arc")
+      .data(pie(dataset))
+      .enter().append("g"); 
+  g.append("text")
+      .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+      .attr("dy", "0.35em")
+      .text(function(d) { return d.data.label; });
+    
+    var svg1 = d3.select('#donut')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height+50)
+    .append('g')
+    .attr('transform', 'translate(' + (width / 2) +
+      ',' + (height / 2) + ')');
+    var legend1 = svg1.append('g')
+    .attr('class', 'chart__legend')
+    .attr('width', width)
+    .attr('height', 10)
+    .attr('transform', 'translate(10, 10)');
+
+  legend1.append('text')
+    .attr('class', 'fa fa-asterisk fa-fw w3-margin-right w3-text-teal')
+    .text(function(d) { return "Total Tweets: " + (pos+neg+neu)});
+    
+  /*var g = svg.selectAll(".arc")
+      .data(pie(dataset))
+    .enter().append("g")
+      .attr("class", "arc");
+
+  g.append("path")
+      .attr("d", arc)
+      .style("fill", function(d) { return color(d.label); });
+
+  g.append("text")
+      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+      .attr("dy", ".35em")
+      .text(function(d) { return d.data.label; });*/
+});
+/*
+function type(d) {
+  d.population = +d.population;
+  return d;
+}
+*/
+    </script>
+    </body>
+</html>
