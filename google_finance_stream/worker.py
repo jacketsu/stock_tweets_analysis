@@ -2,7 +2,7 @@ import json, requests
 
 from six.moves import configparser
 
-end_point = 'search-stock-aqj3tyurz5jx3mut3ot4ll7h3a.us-west-2.es.amazonaws.com'
+end_point = ''
 index = 'stock'
 mapping_type = 'price'  
 address = 'http://%s/%s/%s' % (end_point, index, mapping_type)
